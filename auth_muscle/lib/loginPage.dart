@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// TODO: import firebase_auth
+// TODO: import cloud_firestore (kalau nanti perlu)
 
 class loginPage extends StatelessWidget {
   const loginPage({super.key});
@@ -18,6 +20,7 @@ class loginPage extends StatelessWidget {
             ),
             SizedBox(height: 5),
             Form(
+              // TODO: tambahkan GlobalKey<FormState>
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: Column(
@@ -30,6 +33,7 @@ class loginPage extends StatelessWidget {
                         prefixIcon: Icon(Icons.email),
                         border: OutlineInputBorder(),
                       ),
+                      // TODO: simpan value email ke variable
                       onChanged: (value) {},
                       validator: (value) {
                         return value!.isEmpty ? 'Please Enter Email' : null;
@@ -44,6 +48,7 @@ class loginPage extends StatelessWidget {
                         prefixIcon: Icon(Icons.password),
                         border: OutlineInputBorder(),
                       ),
+                      // TODO: simpan value password ke variable
                       onChanged: (value) {},
                       validator: (value) {
                         return value!.isEmpty ? 'Please Enter Password' : null;
@@ -53,15 +58,21 @@ class loginPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(15.0),
                       child: MaterialButton(
-                        onPressed: (){
-                      
+                        onPressed: () {
+                          // TODO: validasi form
+                          
+                          // TODO: panggil FirebaseAuth signInWithEmailAndPassword
+                          
+                          // TODO: handle error (try-catch)
+                          
+                          // NOTE:
+                          // setelah login sukses, JANGAN redirect di sini
+                          // biarkan AuthStateListener yang handle redirect
                         },
                         minWidth: double.infinity,
                         color: Colors.teal,
                         textColor: Colors.white,
-                        child: Text(
-                          "Login",
-                        ),
+                        child: Text("Login"),
                       ),
                     )
                   ],
