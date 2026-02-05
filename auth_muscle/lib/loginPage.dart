@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-// TODO: import firebase_auth
-// TODO: import cloud_firestore (kalau nanti perlu)
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class loginPage extends StatelessWidget {
   const loginPage({super.key});
@@ -60,11 +60,11 @@ class loginPage extends StatelessWidget {
                       child: MaterialButton(
                         onPressed: () {
                           // TODO: validasi form
-                          
+
                           // TODO: panggil FirebaseAuth signInWithEmailAndPassword
-                          
+
                           // TODO: handle error (try-catch)
-                          
+
                           // NOTE:
                           // setelah login sukses, JANGAN redirect di sini
                           // biarkan AuthStateListener yang handle redirect
@@ -74,7 +74,7 @@ class loginPage extends StatelessWidget {
                         textColor: Colors.white,
                         child: Text("Login"),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
