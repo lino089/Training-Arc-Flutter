@@ -5,8 +5,8 @@ class dashboardUser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text("User Page"),
+    return Scaffold(
+      body: Center(child: Text("User Page")),
     );
   }
 }

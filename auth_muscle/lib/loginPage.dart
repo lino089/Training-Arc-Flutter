@@ -2,8 +2,44 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class loginPage extends StatelessWidget {
+class loginPage extends StatefulWidget {
   const loginPage({super.key});
+
+  @override
+  State<loginPage> createState() => _loginPage();
+}
+
+class _loginPage extends State<loginPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  String _email = '';
+  String _password = '';
+
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _email,
+          password: _password,
+        );
+
+        print("Login Berhasil");
+      } on FirebaseAuthException catch (e) {
+        String message = 'Terjadi kesalahan';
+        if (e.code == 'user-not-found') {
+          message = 'User tidak Ditemukan';
+        } else if (e.code == 'wrong-password') {
+          message = 'password salah';
+        }
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +57,7 @@ class loginPage extends StatelessWidget {
             SizedBox(height: 5),
             Form(
               // TODO: tambahkan GlobalKey<FormState>
+              key: _formKey,
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: Column(
@@ -34,13 +71,18 @@ class loginPage extends StatelessWidget {
                         border: OutlineInputBorder(),
                       ),
                       // TODO: simpan value email ke variable
-                      onChanged: (value) {},
+                      onChanged: (value) {
+                        setState(() {
+                          _email = value;
+                        });
+                      },
                       validator: (value) {
                         return value!.isEmpty ? 'Please Enter Email' : null;
                       },
                     ),
                     SizedBox(height: 15),
                     TextFormField(
+                      obscureText: true,
                       keyboardType: TextInputType.visiblePassword,
                       decoration: InputDecoration(
                         labelText: 'Password',
@@ -49,7 +91,11 @@ class loginPage extends StatelessWidget {
                         border: OutlineInputBorder(),
                       ),
                       // TODO: simpan value password ke variable
-                      onChanged: (value) {},
+                      onChanged: (value) {
+                        setState(() {
+                          _password = value;
+                        });
+                      },
                       validator: (value) {
                         return value!.isEmpty ? 'Please Enter Password' : null;
                       },
@@ -58,17 +104,7 @@ class loginPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(15.0),
                       child: MaterialButton(
-                        onPressed: () {
-                          // TODO: validasi form
-
-                          // TODO: panggil FirebaseAuth signInWithEmailAndPassword
-
-                          // TODO: handle error (try-catch)
-
-                          // NOTE:
-                          // setelah login sukses, JANGAN redirect di sini
-                          // biarkan AuthStateListener yang handle redirect
-                        },
+                        onPressed: _login,
                         minWidth: double.infinity,
                         color: Colors.teal,
                         textColor: Colors.white,

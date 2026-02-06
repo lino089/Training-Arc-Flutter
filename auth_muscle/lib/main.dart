@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:auth_muscle/loginPage.dart';
 import 'package:auth_muscle/adminPage.dart';
@@ -5,7 +6,6 @@ import 'package:auth_muscle/userPage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,31 +21,53 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const loginPage();
-        }
-        return FutureBuilder<String>(
-          future: getRole(snapshot.data!.uid),
-          builder: (context, rolesnapshot) {
-            if (rolesnapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
-            }
-            if (rolesnapshot.data == 'admin') {
-              return const dashboardAdmin();
-            } else {
-              return const dashboardUser();
-            }
-          },
-        );
-      },
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const loginPage();
+          }
+          return FutureBuilder<String>(
+            future: getRole(snapshot.data!.uid),
+            builder: (context, rolesnapshot) {
+              if (rolesnapshot.hasError) {
+                return const Scaffold(
+                  body: Center(
+                    child: Text("Terjadi kesalahan saat mengambil dataR"),
+                  ),
+                );
+              }
+              if (rolesnapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (rolesnapshot.data == 'admin') {
+                return const dashboardAdmin();
+              } else {
+                return const dashboardUser();
+              }
+            },
+          );
+        },
       ),
     );
   }
+
   Future<String> getRole(String uid) async {
-    return "admin";
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+
+      if (userDoc.exists) {
+        return userDoc['role'] ?? 'user';
+      } else {
+        return 'user';
+      }
+    } catch (e) {
+      print("Error getting role: $e");
+      return 'user';
+    }
   }
 }
