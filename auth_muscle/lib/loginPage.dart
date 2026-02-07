@@ -1,3 +1,4 @@
+import 'package:auth_muscle/regisPage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -102,13 +103,30 @@ class _loginPage extends State<loginPage> {
                     ),
                     SizedBox(height: 10),
                     Padding(
-                      padding: const EdgeInsets.all(15.0),
+                      padding: const EdgeInsets.only(right: 15, left: 15,),
                       child: MaterialButton(
                         onPressed: _login,
                         minWidth: double.infinity,
                         color: Colors.teal,
                         textColor: Colors.white,
                         child: Text("Login"),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const regisPage(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        "Belum punya akun?",
+                        style: TextStyle(
+                          color: Colors.teal,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
