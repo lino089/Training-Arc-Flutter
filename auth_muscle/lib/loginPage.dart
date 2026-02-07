@@ -1,4 +1,6 @@
+import 'package:auth_muscle/adminPage.dart';
 import 'package:auth_muscle/regisPage.dart';
+import 'package:auth_muscle/userPage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,31 +18,20 @@ class _loginPage extends State<loginPage> {
   String _email = '';
   String _password = '';
 
-  Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _email,
-          password: _password,
-        );
+Future<void> _login() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _email,
+        password: _password,
+      );
 
-        print("Login Berhasil");
-      } on FirebaseAuthException catch (e) {
-        String message = 'Terjadi kesalahan';
-        if (e.code == 'user-not-found') {
-          message = 'User tidak Ditemukan';
-        } else if (e.code == 'wrong-password') {
-          message = 'password salah';
-        }
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
-      } catch (e) {
-        print(e);
-      }
+    } catch (e) {
+      print("LOGIN ERROR: $e");
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +94,7 @@ class _loginPage extends State<loginPage> {
                     ),
                     SizedBox(height: 10),
                     Padding(
-                      padding: const EdgeInsets.only(right: 15, left: 15,),
+                      padding: const EdgeInsets.only(right: 15, left: 15),
                       child: MaterialButton(
                         onPressed: _login,
                         minWidth: double.infinity,

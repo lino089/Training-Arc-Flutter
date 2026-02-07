@@ -29,23 +29,23 @@ class MainApp extends StatelessWidget {
           return FutureBuilder<String>(
             future: getRole(snapshot.data!.uid),
             builder: (context, rolesnapshot) {
-              if (rolesnapshot.hasError) {
-                return const Scaffold(
-                  body: Center(
-                    child: Text("Terjadi kesalahan saat mengambil dataR"),
-                  ),
-                );
-              }
               if (rolesnapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 );
               }
-              if (rolesnapshot.data == 'admin') {
-                return const dashboardAdmin();
-              } else {
-                return const dashboardUser();
+              if (!rolesnapshot.hasData) {
+                return const Scaffold(
+                  body: Center(child: Text("Role tidak ditemukan")),
+                );
               }
+              final role = rolesnapshot.data!.trim().toLowerCase();
+
+              if (role == 'admin') {
+                return const dashboardAdmin();
+              } 
+                return const dashboardUser();
+              
             },
           );
         },
@@ -55,11 +55,13 @@ class MainApp extends StatelessWidget {
 
   Future<String> getRole(String uid) async {
     try {
+      print("CHECK ROLE UID: $uid");
+
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('Users')
           .doc(uid)
           .get();
-
+      print("ROLE FIRESTORE: ${userDoc['role']}");
       if (userDoc.exists) {
         return userDoc['role'] ?? 'user';
       } else {
