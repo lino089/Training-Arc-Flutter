@@ -56,7 +56,7 @@ class MainApp extends StatelessWidget {
   Future<String> getRole(String uid) async {
     try {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
+          .collection('Users')
           .doc(uid)
           .get();
 
