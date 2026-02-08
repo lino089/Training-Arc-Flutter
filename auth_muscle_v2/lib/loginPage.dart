@@ -1,3 +1,4 @@
+import 'package:auth_muscle_v2/regisPage.dart';
 import 'package:flutter/material.dart';
 
 class loginPage extends StatefulWidget {
@@ -11,9 +12,7 @@ class _loginPage extends State<loginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Login Page"),
-      ),
+      appBar: AppBar(title: Text("Login Page")),
       body: Center(
         child: Padding(
           padding: EdgeInsetsGeometry.all(15),
@@ -23,10 +22,7 @@ class _loginPage extends State<loginPage> {
             children: [
               Text(
                 "Login",
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
               Form(
@@ -38,14 +34,10 @@ class _loginPage extends State<loginPage> {
                         labelText: "UID",
                         hintText: "Enter UID",
                         prefixIcon: Icon(Icons.perm_identity),
-                        border: OutlineInputBorder()
+                        border: OutlineInputBorder(),
                       ),
-                      onChanged: (value) {
-                        
-                      },
-                      validator: (value) {
-                        
-                      },
+                      onChanged: (value) {},
+                      validator: (value) {},
                     ),
                     SizedBox(height: 5),
                     TextFormField(
@@ -54,20 +46,16 @@ class _loginPage extends State<loginPage> {
                         labelText: "Password",
                         hintText: "Enter Password",
                         prefixIcon: Icon(Icons.password),
-                        border: OutlineInputBorder()  
+                        border: OutlineInputBorder(),
                       ),
-                      onChanged: (value) {
-                        
-                      },
-                      validator: (value) {
-                        
-                      },
+                      onChanged: (value) {},
+                      validator: (value) {},
                     ),
                     SizedBox(height: 10),
                     Padding(
-                      padding: EdgeInsetsGeometry.only(left: 15, right: 15) ,
+                      padding: EdgeInsetsGeometry.only(left: 15, right: 15),
                       child: MaterialButton(
-                        onPressed: (){},
+                        onPressed: () {},
                         minWidth: double.infinity,
                         color: Colors.teal,
                         textColor: Colors.white,
@@ -75,20 +63,23 @@ class _loginPage extends State<loginPage> {
                       ),
                     ),
                     TextButton(
-                      onPressed: (){
-                        
-                      }, 
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context, 
+                          MaterialPageRoute(builder: (context) => regisPage())
+                        );
+                      },
                       child: Text(
                         "Buat Akun Sekolah",
                         style: TextStyle(
                           color: Colors.teal,
-                          fontWeight: FontWeight.bold
+                          fontWeight: FontWeight.bold,
                         ),
-                        )
-                      )
+                      ),
+                    ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),
