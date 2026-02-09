@@ -1,3 +1,4 @@
+import 'package:auth_muscle_v2/pages/loginPage.dart';
 import 'package:flutter/material.dart';
 
 class regisPage extends StatefulWidget {
@@ -88,7 +89,10 @@ class _regisPage extends State<regisPage> {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => loginPage())
+                        );
                       },
                       child: Text(
                         "Sudah Punya Akun",

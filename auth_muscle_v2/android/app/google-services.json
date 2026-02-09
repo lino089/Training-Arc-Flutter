@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "144659314794",
+    "project_id": "auth-muscle-v2",
+    "storage_bucket": "auth-muscle-v2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:144659314794:android:13287c41bf504ea6b1b213",
+        "android_client_info": {
+          "package_name": "com.example.auth_muscle_v2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhu0QPWjT57cd_TWfAkQ0umfoXqVAjfn4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

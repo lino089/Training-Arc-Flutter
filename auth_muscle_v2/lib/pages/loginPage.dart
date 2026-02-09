@@ -1,4 +1,4 @@
-import 'package:auth_muscle_v2/regisPage.dart';
+import 'package:auth_muscle_v2/pages/regisPage.dart';
 import 'package:flutter/material.dart';
 
 class loginPage extends StatefulWidget {
@@ -31,8 +31,8 @@ class _loginPage extends State<loginPage> {
                     TextFormField(
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
-                        labelText: "UID",
-                        hintText: "Enter UID",
+                        labelText: "User ID",
+                        hintText: "Contoh: A-0000",
                         prefixIcon: Icon(Icons.perm_identity),
                         border: OutlineInputBorder(),
                       ),
