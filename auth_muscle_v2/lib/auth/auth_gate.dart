@@ -28,7 +28,10 @@ class AuthGate extends StatelessWidget {
         final uid = authsnapshot.data!.uid;
 
         return FutureBuilder<DocumentSnapshot>(
-          future: FirebaseFirestore.instance.collection('users').doc(uid).get(),
+          future: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(uid)
+                    .get(),
           builder: (context, usersnapshot) {
             if (usersnapshot.hasError) {
               return Scaffold(
