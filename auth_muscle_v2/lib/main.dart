@@ -1,6 +1,5 @@
 import 'package:auth_muscle_v2/auth/auth_gate.dart';
 import 'package:auth_muscle_v2/firebase_options.dart';
-import 'package:auth_muscle_v2/pages/loginPage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 

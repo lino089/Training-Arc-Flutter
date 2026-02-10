@@ -22,20 +22,15 @@ class AuthGate extends StatelessWidget {
         }
 
         if (!authsnapshot.hasData) {
-          print("DEBUG: Tidak ada user login. Menampilkan LoginPage.");
           return const loginPage();
         }
 
         final uid = authsnapshot.data!.uid;
-        print(
-          "DEBUG: User login dengan UID: $uid. Mengambil data Firestore...",
-        );
 
         return FutureBuilder<DocumentSnapshot>(
           future: FirebaseFirestore.instance.collection('users').doc(uid).get(),
           builder: (context, usersnapshot) {
             if (usersnapshot.hasError) {
-              print("Debug Error: ${usersnapshot.error}");
               return Scaffold(
                 body: Center(child: Text("Terjadi Kesalahan: ${usersnapshot.error}")),
               );
@@ -48,7 +43,6 @@ class AuthGate extends StatelessWidget {
             }
 
             if (!usersnapshot.hasData || !usersnapshot.data!.exists) {
-              print("DEBUG: Dokumen Firestore TIDAK DITEMUKAN untuk UID: $uid");
               return Scaffold(
                 body: Center(
                   child: Column(
@@ -68,7 +62,6 @@ class AuthGate extends StatelessWidget {
 
             final data = usersnapshot.data!.data() as Map<String, dynamic>;
             final role = data['role'];
-            print("DEBUG: Role ditemukan: $role. Berpindah halaman...");
 
             if (role == 'super_admin') return const superAdminPage();
             if (role == 'admin') return const adminPage();
