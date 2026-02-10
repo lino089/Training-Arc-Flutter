@@ -1,28 +1,17 @@
-// auth_gate.dart
-
-// TODO 1: Import package yang dibutuhkan
-// - firebase_auth
-// - cloud_firestore
-// - material.dart
-// - halaman: login_page, super_admin_page, admin_page, user_page
-
 import 'package:auth_muscle_v2/pages/loginPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:auth_muscle_v2/pages/admin_page.dart';
 import 'package:auth_muscle_v2/pages/super_admin_page.dart';
 import 'package:auth_muscle_v2/pages/user_page.dart';
 
-// TODO 2: Buat StatelessWidget bernama AuthGate
-// - Widget ini akan jadi "gerbang" utama aplikasi
-// - Jangan pakai StatefulWidget, Stateless sudah cukup
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // auth_gate.dart
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, authsnapshot) {
@@ -31,40 +20,63 @@ class AuthGate extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        if (authsnapshot.hasData == false) {
-          return loginPage();
+
+        if (!authsnapshot.hasData) {
+          print("DEBUG: Tidak ada user login. Menampilkan LoginPage.");
+          return const loginPage();
         }
 
         final uid = authsnapshot.data!.uid;
+        print(
+          "DEBUG: User login dengan UID: $uid. Mengambil data Firestore...",
+        );
 
         return FutureBuilder<DocumentSnapshot>(
           future: FirebaseFirestore.instance.collection('users').doc(uid).get(),
           builder: (context, usersnapshot) {
+            if (usersnapshot.hasError) {
+              print("Debug Error: ${usersnapshot.error}");
+              return Scaffold(
+                body: Center(child: Text("Terjadi Kesalahan: ${usersnapshot.error}")),
+              );
+            }
+
             if (usersnapshot.connectionState == ConnectionState.waiting) {
-              return Scaffold(body: Center(child: CircularProgressIndicator()));
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
             }
 
             if (!usersnapshot.hasData || !usersnapshot.data!.exists) {
-              return const Scaffold(
-                body: Center(child: Text("Data use Tidak ditemukan")),
+              print("DEBUG: Dokumen Firestore TIDAK DITEMUKAN untuk UID: $uid");
+              return Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Data user Tidak ditemukan di Firestore"),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () => FirebaseAuth.instance.signOut(),
+                        child: const Text("Logout & Coba Lagi"),
+                      ),
+                    ],
+                  ),
+                ),
               );
             }
 
             final data = usersnapshot.data!.data() as Map<String, dynamic>;
             final role = data['role'];
+            print("DEBUG: Role ditemukan: $role. Berpindah halaman...");
 
-            if (role == 'super_admin') {
-              return const superAdminPage();
-            } else if (role == 'admin') {
-              return const adminPage();
-            } else if (role == 'user') {
-              return const userPage();
-            }
+            if (role == 'super_admin') return const superAdminPage();
+            if (role == 'admin') return const adminPage();
+            if (role == 'user') return const userPage();
+
 
             return const Scaffold(
-              body:  Center(
-                child: Text("Role tidak valid"),
-              ),
+              body: Center(child: Text("Role tidak valid")),
             );
           },
         );
@@ -72,52 +84,3 @@ class AuthGate extends StatelessWidget {
     );
   }
 }
-
-// TODO 3: Di dalam build(), gunakan StreamBuilder
-// - Stream: FirebaseAuth.instance.authStateChanges()
-// - Tujuan: cek apakah user sudah login atau belum
-
-// TODO 4: Tangani kondisi loading auth
-// - Jika connectionState == waiting
-// - Tampilkan CircularProgressIndicator
-
-// TODO 5: Jika user BELUM login
-// - snapshot.hasData == false
-// - Arahkan ke LoginPage
-// - Jangan pakai Navigator, langsung return widget
-
-// TODO 6: Jika user SUDAH login
-// - Ambil uid dari snapshot.data!.uid
-
-// TODO 7: Gunakan FutureBuilder untuk ambil data user dari Firestore
-// - Collection: users
-// - Document ID: uid
-// - Tujuan: ambil role dan schoolId
-
-// TODO 8: Tangani kondisi loading Firestore
-// - Tampilkan CircularProgressIndicator
-
-// TODO 9: Tangani error / data user tidak ditemukan
-// - Jika document tidak ada
-// - Tampilkan pesan error sederhana (Text)
-
-// TODO 10: Ambil field role dari Firestore
-// - role kemungkinan: super_admin, admin, teacher
-
-// TODO 11: Lakukan routing berdasarkan role
-// - Jika role == super_admin → SuperAdminPage
-// - Jika role == admin → AdminPage
-// - Jika role == teacher → UserPage
-
-// TODO 12: Pastikan AuthGate hanya RETURN widget
-// - Tidak boleh ada Navigator.push / pushReplacement
-// - Semua routing berbasis return widget
-
-// TODO 13 (opsional): Tambahkan logging/debug
-// - print(uid)
-// - print(role)
-// - Berguna saat testing
-
-// TODO 14 (opsional): Siapkan fallback page
-// - Jika role tidak dikenal
-// - Tampilkan Text("Role tidak valid")

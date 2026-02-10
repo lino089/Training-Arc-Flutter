@@ -5,6 +5,11 @@ class superAdminPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Super Admin Page"),
+      ),
+      body: Center(child: Text("Super Admin")),
+    );
   }
 }
