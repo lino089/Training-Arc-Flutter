@@ -9,16 +9,17 @@ class superAdminPage extends StatefulWidget {
 }
 
 class _superAdminPage extends State<superAdminPage> {
+  // // TODO 1: Buat GlobalKey<FormState> untuk validasi form tambah user
+  // // TODO 2: Buat TextEditingController untuk email, password, userId (A-00x), dan nama user
+  final key = GlobalKey<FormState>();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController userIdController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  String selectedRole = 'user';
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
-    // // TODO 1: Buat GlobalKey<FormState> untuk validasi form tambah user
-    // // TODO 2: Buat TextEditingController untuk email, password, userId (A-00x), dan nama user
-    final key = GlobalKey<FormState>();
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController passwordController = TextEditingController();
-    final TextEditingController userIdController = TextEditingController();
-    final TextEditingController usernameController = TextEditingController();
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Super Admin Page"),
@@ -48,14 +49,33 @@ class _superAdminPage extends State<superAdminPage> {
               // // c. TextFormField untuk Password User
               // // d. DropdownButtonFormField untuk memilih Role ('admin' atau 'user')
               Form(
+                key: key,
                 child: Column(
                   children: [
                     TextFormField(
+                      controller: userIdController,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        labelText: "User Id",
+                        hintText: "Masukan User Id",
+                        prefixIcon: Icon(Icons.badge),
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "User Id Wajib Diisi";
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextFormField(
+                      controller: usernameController,
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
                         labelText: "Username",
                         hintText: "Masukan Username",
-                        prefixIcon: Icon(Icons.person),
+                        prefixIcon: Icon(Icons.person_2),
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
@@ -67,6 +87,7 @@ class _superAdminPage extends State<superAdminPage> {
                     ),
                     SizedBox(height: 10),
                     TextFormField(
+                      controller: emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         labelText: "Email",
@@ -83,6 +104,7 @@ class _superAdminPage extends State<superAdminPage> {
                     ),
                     SizedBox(height: 10),
                     TextFormField(
+                      controller: passwordController,
                       keyboardType: TextInputType.visiblePassword,
                       decoration: InputDecoration(
                         labelText: "Password",
@@ -96,6 +118,44 @@ class _superAdminPage extends State<superAdminPage> {
                         }
                         return null;
                       },
+                    ),
+                    SizedBox(height: 10),
+                    DropdownButtonFormField(
+                      decoration: InputDecoration(
+                        labelText: "Pilih Role",
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.settings_accessibility),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'user',
+                          child: Text("User Biasa"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'admin',
+                          child: Text("Admin Sekolah"),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          selectedRole = value!;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    Padding(
+                      padding: EdgeInsetsGeometry.all(15),
+                      child: MaterialButton(
+                        onPressed: isLoading ? null : () => createUser(),
+                        minWidth: double.infinity,
+                        color: Colors.black,
+                        textColor: Colors.white,
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text("Daftarkan Akun"),
+                      ),
                     ),
                   ],
                 ),
@@ -111,6 +171,19 @@ class _superAdminPage extends State<superAdminPage> {
               // // TODO 6: Gunakan Expanded dan StreamBuilder/ListView untuk menampilkan daftar user
               // // Untuk sementara (UI saja), kamu bisa gunakan ListView.builder dengan data dummy
               // // Tampilkan informasi: User ID, Email, dan Role dalam bentuk ListTile
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: 10,
+                itemBuilder: (context, index) {
+                  return const ListTile(
+                    leading: CircleAvatar(child: Icon(Icons.person)),
+                    title: Text("Contoh User"),
+                    subtitle: Text("user@sekolah.com"),
+                    trailing: Text("Role: User"),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -121,4 +194,14 @@ class _superAdminPage extends State<superAdminPage> {
 
   // // TODO 8: Buat kerangka fungsi Future<void> createUser() async { ... }
   // // Fungsi ini nanti akan berisi logika Firebase Auth & Firestore
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    userIdController.dispose();
+    usernameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> createUser() async {}
 }
