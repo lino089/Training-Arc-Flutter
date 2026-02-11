@@ -1,3 +1,4 @@
+import 'package:auth_muscle_v2/auth/auth_gate.dart';
 import 'package:auth_muscle_v2/pages/regisPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -27,34 +28,21 @@ class _loginPage extends State<loginPage> {
         isLoading = true;
       });
       try {
-        // // TODO 1: Cari dokumen di koleksi 'schools' berdasarkan NPSN yang diinput
-        // Gunakan .where('npsn', isEqualTo: npsn) dan .limit(1).get()
         final schoolQuery = await FirebaseFirestore.instance
             .collection('schools')
             .where('npsn', isEqualTo: npsn)
             .limit(1)
             .get();
-        // // TODO 2: Cek apakah data sekolah ditemukan
-        // Jika queryDocs.isEmpty, throw error 'Sekolah dengan NPSN tersebut tidak ditemukan'
+
         if (schoolQuery.docs.isEmpty) {
           throw "Sekolah dengan NPSN tersebut tidak ditemukan";
         }
-        // // TODO 3: Ambil 'schoolId' dari dokumen sekolah tersebut
         // final schoolId = schoolQuery.docs.first.id;
         final schoolId = schoolQuery.docs.first.id;
-        // // TODO 4: Cari user di koleksi 'users' yang punya userId DAN schoolId yang cocok
-        // Gunakan .where('userId', isEqualTo: userId).where('schoolId', isEqualTo: schoolId)
-
-        /* CATATAN: 
-           Nantinya kita akan upgrade bagian TODO 4 ini menggunakan koleksi 'login_map' 
-           agar lebih cepat, tapi untuk sekarang pakai 'users' dulu tidak apa-apa 
-           supaya kamu paham alur relasinya.
-        */
 
         final query = await FirebaseFirestore.instance
             .collection('users')
             .where('userId', isEqualTo: userId)
-            // // TODO 5: Tambahkan filter .where('schoolId', isEqualTo: schoolId) di sini
             .where('schoolId', isEqualTo: schoolId)
             .limit(1)
             .get();
@@ -70,12 +58,24 @@ class _loginPage extends State<loginPage> {
         if (!isActive) {
           throw 'Akun belum aktif. hubungi admin.';
         }
-
-        // // TODO 6: Lakukan Login ke Firebase Auth menggunakan email yang didapat
         await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email,
           password: password,
         );
+
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Login Berhasil")));
+        }
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const AuthGate()),
+          (route) => false
+        );
+
+
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.message ?? 'Terjadi kesalahan saat login')),
