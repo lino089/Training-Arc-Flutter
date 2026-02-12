@@ -2,7 +2,6 @@ import 'package:auth_muscle_v2/pages/loginPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// // TODO 1: Import firebase_auth dan cloud_firestore
 
 class regisPage extends StatefulWidget {
   const regisPage({super.key});
@@ -12,8 +11,6 @@ class regisPage extends StatefulWidget {
 }
 
 class _regisPage extends State<regisPage> {
-  // // TODO 2: Buat TextEditingController untuk npsn, schoolName, address, email, dan password
-  // // TODO 3: Buat GlobalKey<FormState> dan variabel bool isLoading = false
   final TextEditingController npsnController = TextEditingController();
   final TextEditingController schoolNameController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
@@ -22,13 +19,6 @@ class _regisPage extends State<regisPage> {
   final key = GlobalKey<FormState>();
   bool isLoading = false;
 
-  // // TODO 4: Buat fungsi Future<void> register() async { ... }
-  // Di dalam fungsi ini, jalankan alur berikut:
-  // a. Cek validasi form.
-  // b. Daftarkan email & password ke FirebaseAuth (createUserWithEmailAndPassword).
-  // c. Setelah dapat UID, buat dokumen baru di koleksi 'schools' dengan data NPSN, nama, dll.
-  // d. Simpan juga data user ke koleksi 'users' dengan role 'admin' dan sertakan 'schoolId' & 'userId'.
-  // e. Terakhir, buat mapping di koleksi 'login_map' dengan ID: "${schoolId}_${userId}".
   Future<void> register() async {
     final String password = passwordController.text.trim();
     final String schoolName = schoolNameController.text.trim();
@@ -211,7 +201,6 @@ class _regisPage extends State<regisPage> {
                     Padding(
                       padding: EdgeInsetsGeometry.only(left: 15, right: 15),
                       child: MaterialButton(
-                        // // TODO 16: Panggil fungsi register() dan tampilkan loading jika isLoading true
                         onPressed: register,
                         minWidth: double.infinity,
                         color: Colors.teal,

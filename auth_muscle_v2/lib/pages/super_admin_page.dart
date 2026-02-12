@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -9,8 +11,6 @@ class superAdminPage extends StatefulWidget {
 }
 
 class _superAdminPage extends State<superAdminPage> {
-  // // TODO 1: Buat GlobalKey<FormState> untuk validasi form tambah user
-  // // TODO 2: Buat TextEditingController untuk email, password, userId (A-00x), dan nama user
   final key = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -30,7 +30,6 @@ class _superAdminPage extends State<superAdminPage> {
           ),
         ],
       ),
-      // // TODO 3: Ganti Center dengan SingleChildScrollView agar halaman bisa di-scroll
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -41,13 +40,6 @@ class _superAdminPage extends State<superAdminPage> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 20),
-
-              // // TODO 4: Buat Form untuk input user baru
-              // // Di dalam Form, tambahkan:
-              // // a. TextFormField untuk User ID (misal: ADMIN-02 atau USER-01)
-              // // b. TextFormField untuk Email User
-              // // c. TextFormField untuk Password User
-              // // d. DropdownButtonFormField untuk memilih Role ('admin' atau 'user')
               Form(
                 key: key,
                 child: Column(
@@ -160,17 +152,11 @@ class _superAdminPage extends State<superAdminPage> {
                   ],
                 ),
               ),
-              // // TODO 5: Buat MaterialButton atau ElevatedButton untuk memicu fungsi registerUser()
               Divider(height: 40, thickness: 2),
-
               Text(
                 "Daftar Akun Terdaftar",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-
-              // // TODO 6: Gunakan Expanded dan StreamBuilder/ListView untuk menampilkan daftar user
-              // // Untuk sementara (UI saja), kamu bisa gunakan ListView.builder dengan data dummy
-              // // Tampilkan informasi: User ID, Email, dan Role dalam bentuk ListTile
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -188,12 +174,9 @@ class _superAdminPage extends State<superAdminPage> {
           ),
         ),
       ),
-      // // TODO 7: (Opsional) Tambahkan FloatingActionButton jika ingin form input dipisah ke Dialog/Halaman baru
     );
   }
 
-  // // TODO 8: Buat kerangka fungsi Future<void> createUser() async { ... }
-  // // Fungsi ini nanti akan berisi logika Firebase Auth & Firestore
   @override
   void dispose() {
     emailController.dispose();
@@ -203,5 +186,103 @@ class _superAdminPage extends State<superAdminPage> {
     super.dispose();
   }
 
-  Future<void> createUser() async {}
+  Future<void> createUser() async {
+    final String password = passwordController.text.trim();
+    final String email = emailController.text.trim();
+    final String userId = userIdController.text.trim();
+    final String username = usernameController.text.trim();
+
+    if (key.currentState!.validate()) return;
+
+    String? adminPassword = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        final TextEditingController confirmPassController =
+            TextEditingController();
+        return AlertDialog(
+          title: const Text("Konfirmasi Admin"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text("Masukan password anda untuk melanjutkan"),
+              TextField(
+                controller: confirmPassController,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: "Password Admin"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal"),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  Navigator.pop(context, confirmPassController.text),
+              child: const Text("Konfirmasi"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (adminPassword == null || adminPassword.isEmpty) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // // TODO 2: Ambil data sekolah Super Admin yang sedang login.
+      // // Kamu butuh 'schoolId' dari admin yang sekarang agar user baru otomatis masuk ke sekolah yang sama.
+      // final adminUser = FirebaseAuth.instance.currentUser;
+      // final adminDoc = await FirebaseFirestore.instance.collection('users').doc(adminUser!.uid).get();
+      // final String schoolId = adminDoc['schoolId'];
+      final adminUser = FirebaseAuth.instance.currentUser;
+      final adminDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(adminUser!.uid)
+          .get();
+      final String schoolId = adminDoc['schoolId'];
+
+      // // TODO 3: Cek apakah User ID sudah dipakai di sekolah ini.
+      // // Lakukan query ke koleksi 'users' dengan filter 'userId' dan 'schoolId'.
+      // // Jika ada, lempar error: "User ID sudah terdaftar di sekolah ini".
+      await FirebaseFirestore.instance
+          .collection('users')
+          .where('userId', isEqualTo: userId)
+          .where('schoolId', isEqualTo: schoolId)
+          .get();
+
+      // // --- BAGIAN KRUSIAL (Taktik Pembuatan Akun) ---
+
+      // // TODO 4: Simpan kredensial Super Admin yang sedang login sementara.
+      // // Kita butuh email & password admin ini untuk login kembali nanti.
+      // // Karena Firebase akan otomatis me-login-kan user yang baru dibuat.
+
+      String emailAdmin = FirebaseAuth.instance.currentUser?.email ?? "";
+
+      // // TODO 5: Buat akun di Firebase Auth.
+      // // UserCredential newUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(...);
+
+      // // TODO 6: Simpan data profil lengkap ke Firestore.
+      // // Masukkan ke koleksi 'users' dengan doc ID menggunakan newUser.user!.uid.
+      // // Data: email, username, userId, role (selectedRole), schoolId, isActive: true.
+
+      // // TODO 7: Login Kembali sebagai Super Admin.
+      // // Setelah akun baru dibuat, Firebase me-login-kan si user baru.
+      // // Kita harus paksa login kembali menggunakan kredensial admin (dari TODO 4).
+      // // await FirebaseAuth.instance.signInWithEmailAndPassword(...);
+
+      // // TODO 8: Berikan Feedback Sukses.
+      // // Tampilkan SnackBar "Akun Berhasil Dibuat", bersihkan semua Controller (clear()).
+    } on FirebaseAuthException catch (e) {
+      // // TODO 9: Handle error spesifik Firebase (misal: email-already-in-use).
+    } catch (e) {
+      // // TODO 10: Handle error umum.
+    } finally {
+      // // TODO 11: Set isLoading = false dan panggil setState.
+    }
+  }
 }
