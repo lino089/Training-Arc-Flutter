@@ -16,8 +16,32 @@ class _superAdminPage extends State<superAdminPage> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController userIdController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
+
+  String? adminSchoolId;
   String selectedRole = 'user';
   bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _getAdminSchoolId();
+  }
+
+  Future<void> _getAdminSchoolId() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (mounted) {
+        setState(() {
+          adminSchoolId = doc['schoolId'];
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -157,19 +181,43 @@ class _superAdminPage extends State<superAdminPage> {
                 "Daftar Akun Terdaftar",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 10,
-                itemBuilder: (context, index) {
-                  return const ListTile(
-                    leading: CircleAvatar(child: Icon(Icons.person)),
-                    title: Text("Contoh User"),
-                    subtitle: Text("user@sekolah.com"),
-                    trailing: Text("Role: User"),
-                  );
-                },
-              ),
+              adminSchoolId == null
+                  ? const CircularProgressIndicator()
+                  : StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .where('schoolId', isEqualTo: adminSchoolId)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Text("Belum ada data user di sekolah ini"),
+                          );
+                        }
+                        var docs = snapshot.data!.docs;
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: docs.length,
+                          itemBuilder: (context, index) {
+                            var userData =
+                                docs[index].data() as Map<String, dynamic>;
+                            return ListTile(
+                              title: Text(userData['username'] ?? '_'),
+                              subtitle: Text(userData['email'] ?? '_'),
+                              trailing: Text(userData['role'] ?? 'user'),
+                            );
+                          },
+                        );
+                      },
+                    ),
             ],
           ),
         ),
@@ -192,7 +240,7 @@ class _superAdminPage extends State<superAdminPage> {
     final String userId = userIdController.text.trim();
     final String username = usernameController.text.trim();
 
-    if (key.currentState!.validate()) return;
+    if (!key.currentState!.validate()) return;
 
     String? adminPassword = await showDialog<String>(
       context: context,
@@ -234,55 +282,74 @@ class _superAdminPage extends State<superAdminPage> {
     });
 
     try {
-      // // TODO 2: Ambil data sekolah Super Admin yang sedang login.
-      // // Kamu butuh 'schoolId' dari admin yang sekarang agar user baru otomatis masuk ke sekolah yang sama.
-      // final adminUser = FirebaseAuth.instance.currentUser;
-      // final adminDoc = await FirebaseFirestore.instance.collection('users').doc(adminUser!.uid).get();
-      // final String schoolId = adminDoc['schoolId'];
       final adminUser = FirebaseAuth.instance.currentUser;
+      final emailAdmin = adminUser?.email;
       final adminDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(adminUser!.uid)
           .get();
       final String schoolId = adminDoc['schoolId'];
-
-      // // TODO 3: Cek apakah User ID sudah dipakai di sekolah ini.
-      // // Lakukan query ke koleksi 'users' dengan filter 'userId' dan 'schoolId'.
-      // // Jika ada, lempar error: "User ID sudah terdaftar di sekolah ini".
-      await FirebaseFirestore.instance
+      final querySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('userId', isEqualTo: userId)
           .where('schoolId', isEqualTo: schoolId)
           .get();
 
-      // // --- BAGIAN KRUSIAL (Taktik Pembuatan Akun) ---
+      if (querySnapshot.docs.isNotEmpty)
+        throw "User ID $userId sudah terdaftar di sekolah ini";
 
-      // // TODO 4: Simpan kredensial Super Admin yang sedang login sementara.
-      // // Kita butuh email & password admin ini untuk login kembali nanti.
-      // // Karena Firebase akan otomatis me-login-kan user yang baru dibuat.
+      UserCredential newUser = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
-      String emailAdmin = FirebaseAuth.instance.currentUser?.email ?? "";
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(newUser.user!.uid)
+          .set({
+            'email': emailController.text.trim(),
+            'username': usernameController.text.trim(),
+            'userId': userIdController.text.trim(),
+            'role': selectedRole,
+            'schoolId': schoolId,
+            'isActive': true,
+          });
 
-      // // TODO 5: Buat akun di Firebase Auth.
-      // // UserCredential newUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(...);
+      _clearForm();
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailAdmin!,
+        password: adminPassword,
+      );
 
-      // // TODO 6: Simpan data profil lengkap ke Firestore.
-      // // Masukkan ke koleksi 'users' dengan doc ID menggunakan newUser.user!.uid.
-      // // Data: email, username, userId, role (selectedRole), schoolId, isActive: true.
-
-      // // TODO 7: Login Kembali sebagai Super Admin.
-      // // Setelah akun baru dibuat, Firebase me-login-kan si user baru.
-      // // Kita harus paksa login kembali menggunakan kredensial admin (dari TODO 4).
-      // // await FirebaseAuth.instance.signInWithEmailAndPassword(...);
-
-      // // TODO 8: Berikan Feedback Sukses.
-      // // Tampilkan SnackBar "Akun Berhasil Dibuat", bersihkan semua Controller (clear()).
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Akun Berhasil Dibuat"),
+          backgroundColor: Colors.green,
+        ),
+      );
     } on FirebaseAuthException catch (e) {
-      // // TODO 9: Handle error spesifik Firebase (misal: email-already-in-use).
+      String msg = "Terjadi Kesalahan";
+      if (e.code == 'email-already-in-use') {
+        msg = 'Email sudah terdaftar';
+      } else if (e.code == 'weak-password') {
+        msg = 'Password terlalu lemah';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
-      // // TODO 10: Handle error umum.
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
-      // // TODO 11: Set isLoading = false dan panggil setState.
+      if(mounted) setState(() => isLoading = false);
     }
+  }
+
+  void _clearForm() {
+    emailController.clear();
+    passwordController.clear();
+    userIdController.clear();
+    usernameController.clear();
   }
 }
