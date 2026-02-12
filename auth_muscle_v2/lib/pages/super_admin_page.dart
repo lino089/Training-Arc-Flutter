@@ -189,8 +189,7 @@ class _superAdminPage extends State<superAdminPage> {
                           .where('schoolId', isEqualTo: adminSchoolId)
                           .snapshots(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
@@ -295,10 +294,15 @@ class _superAdminPage extends State<superAdminPage> {
           .where('schoolId', isEqualTo: schoolId)
           .get();
 
+      FirebaseApp tempApp = await Firebase.initializeApp(
+        name: 'TemporaryApp',
+        options: Firebase.app().options,
+      );
+
       if (querySnapshot.docs.isNotEmpty)
         throw "User ID $userId sudah terdaftar di sekolah ini";
 
-      UserCredential newUser = await FirebaseAuth.instance
+      UserCredential newUser = await FirebaseAuth.instanceFor(app: tempApp)
           .createUserWithEmailAndPassword(
             email: emailController.text.trim(),
             password: passwordController.text.trim(),
@@ -315,6 +319,8 @@ class _superAdminPage extends State<superAdminPage> {
             'schoolId': schoolId,
             'isActive': true,
           });
+
+      await tempApp.delete();
 
       _clearForm();
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -342,7 +348,7 @@ class _superAdminPage extends State<superAdminPage> {
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
-      if(mounted) setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
