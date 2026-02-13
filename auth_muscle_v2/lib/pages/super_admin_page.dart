@@ -29,9 +29,11 @@ class _superAdminPage extends State<superAdminPage> {
 
   // TODO 1: Siapkan Fungsi editUser(String docId, Map data) di sini nanti
   // Fungsinya akan memunculkan ModalBottomSheet dengan form yang sudah terisi data lama
+  Future<void> editUser(String docId, Map data) async {}
 
   // TODO 2: Siapkan Fungsi deleteUser(String docId) di sini nanti
   // Fungsinya akan memunculkan AlertDialog konfirmasi sebelum menghapus document di Firestore
+  Future<void> deleteUser(String docId) async {}
 
   Future<void> _getAdminSchoolId() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -195,7 +197,8 @@ class _superAdminPage extends State<superAdminPage> {
                           .where('schoolId', isEqualTo: adminSchoolId)
                           .snapshots(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
@@ -214,16 +217,104 @@ class _superAdminPage extends State<superAdminPage> {
                           itemBuilder: (context, index) {
                             var userData =
                                 docs[index].data() as Map<String, dynamic>;
-                            String docId = docs[index].id; // ID dokumen untuk edit/hapus
+                            String docId =
+                                docs[index].id; // ID dokumen untuk edit/hapus
 
                             // TODO 3: Ganti return ListTile ini dengan Card
                             // - Gunakan Column di dalam Card
                             // - Baris atas: Informasi User (Username, Email, Badge Role)
                             // - Baris bawah: ButtonBar atau Row (Tombol Edit & Hapus)
-                            return ListTile(
-                              title: Text(userData['username'] ?? '_'),
-                              subtitle: Text(userData['email'] ?? '_'),
-                              trailing: Text(userData['role'] ?? 'user'),
+                            // ListTile(
+                            //   title: Text(userData['username'] ?? '_'),
+                            //   subtitle: Text(userData['email'] ?? '_'),
+                            //   trailing: Text(userData['role'] ?? 'user'),
+                            // );
+                            return Card(
+                              elevation: 2,
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                children: <Widget>[
+                                  ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: Colors.black,
+                                      child: Text(
+                                        userData['username']?[0]
+                                                .toUpperCase() ??
+                                            'U',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      userData['username'] ?? '_',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    subtitle: Text(userData['email'] ?? '_'),
+                                    trailing: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: userData['role'] == 'admin'
+                                            ? Colors.red[100]
+                                            : Colors.blue[100],
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        userData['role']?.toUpperCase() ??
+                                            'USER',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: userData['role'] == 'admin'
+                                              ? Colors.red[900]
+                                              : Colors.blue[900],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const Divider(
+                                    height: 1,
+                                    indent: 16,
+                                    endIndent: 16,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        TextButton.icon(
+                                          onPressed: () {},
+                                          icon: const Icon(
+                                            Icons.edit_outlined,
+                                            size: 18,
+                                          ),
+                                          label: const Text("Edit"),
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: Colors.blue,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        TextButton.icon(
+                                          onPressed: () {},
+                                          icon: const Icon(Icons.delete_outline, size: 18),
+                                          label: const Text("Hapus"),
+                                          style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             );
                           },
                         );
@@ -317,26 +408,26 @@ class _superAdminPage extends State<superAdminPage> {
 
       UserCredential newUser = await FirebaseAuth.instanceFor(app: tempApp)
           .createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
       await FirebaseFirestore.instance
           .collection('users')
           .doc(newUser.user!.uid)
           .set({
-        'email': emailController.text.trim(),
-        'username': usernameController.text.trim(),
-        'userId': userIdController.text.trim(),
-        'role': selectedRole,
-        'schoolId': schoolId,
-        'isActive': true,
-      });
+            'email': emailController.text.trim(),
+            'username': usernameController.text.trim(),
+            'userId': userIdController.text.trim(),
+            'role': selectedRole,
+            'schoolId': schoolId,
+            'isActive': true,
+          });
 
       await tempApp.delete();
 
       _clearForm();
-      
+
       // Logika login ulang admin tetap di sini jika dibutuhkan sesi Auth yang fresh
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailAdmin!,
