@@ -27,6 +27,12 @@ class _superAdminPage extends State<superAdminPage> {
     _getAdminSchoolId();
   }
 
+  // TODO 1: Siapkan Fungsi editUser(String docId, Map data) di sini nanti
+  // Fungsinya akan memunculkan ModalBottomSheet dengan form yang sudah terisi data lama
+
+  // TODO 2: Siapkan Fungsi deleteUser(String docId) di sini nanti
+  // Fungsinya akan memunculkan AlertDialog konfirmasi sebelum menghapus document di Firestore
+
   Future<void> _getAdminSchoolId() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -208,6 +214,12 @@ class _superAdminPage extends State<superAdminPage> {
                           itemBuilder: (context, index) {
                             var userData =
                                 docs[index].data() as Map<String, dynamic>;
+                            String docId = docs[index].id; // ID dokumen untuk edit/hapus
+
+                            // TODO 3: Ganti return ListTile ini dengan Card
+                            // - Gunakan Column di dalam Card
+                            // - Baris atas: Informasi User (Username, Email, Badge Role)
+                            // - Baris bawah: ButtonBar atau Row (Tombol Edit & Hapus)
                             return ListTile(
                               title: Text(userData['username'] ?? '_'),
                               subtitle: Text(userData['email'] ?? '_'),
@@ -234,6 +246,7 @@ class _superAdminPage extends State<superAdminPage> {
   }
 
   Future<void> createUser() async {
+    // ... (Logika createUser kamu tetap sama, sudah aman) ...
     final String password = passwordController.text.trim();
     final String email = emailController.text.trim();
     final String userId = userIdController.text.trim();
@@ -294,35 +307,37 @@ class _superAdminPage extends State<superAdminPage> {
           .where('schoolId', isEqualTo: schoolId)
           .get();
 
+      if (querySnapshot.docs.isNotEmpty)
+        throw "User ID $userId sudah terdaftar di sekolah ini";
+
       FirebaseApp tempApp = await Firebase.initializeApp(
         name: 'TemporaryApp',
         options: Firebase.app().options,
       );
 
-      if (querySnapshot.docs.isNotEmpty)
-        throw "User ID $userId sudah terdaftar di sekolah ini";
-
       UserCredential newUser = await FirebaseAuth.instanceFor(app: tempApp)
           .createUserWithEmailAndPassword(
-            email: emailController.text.trim(),
-            password: passwordController.text.trim(),
-          );
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
 
       await FirebaseFirestore.instance
           .collection('users')
           .doc(newUser.user!.uid)
           .set({
-            'email': emailController.text.trim(),
-            'username': usernameController.text.trim(),
-            'userId': userIdController.text.trim(),
-            'role': selectedRole,
-            'schoolId': schoolId,
-            'isActive': true,
-          });
+        'email': emailController.text.trim(),
+        'username': usernameController.text.trim(),
+        'userId': userIdController.text.trim(),
+        'role': selectedRole,
+        'schoolId': schoolId,
+        'isActive': true,
+      });
 
       await tempApp.delete();
 
       _clearForm();
+      
+      // Logika login ulang admin tetap di sini jika dibutuhkan sesi Auth yang fresh
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailAdmin!,
         password: adminPassword,
@@ -341,7 +356,6 @@ class _superAdminPage extends State<superAdminPage> {
       } else if (e.code == 'weak-password') {
         msg = 'Password terlalu lemah';
       }
-
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
       ScaffoldMessenger.of(
